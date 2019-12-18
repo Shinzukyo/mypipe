@@ -11,7 +11,9 @@ fn main() {
     let input = matches.value_of("in").unwrap();
     let output = matches.value_of("out").unwrap();
 
-    let res_in = Command::new(input.to_string())
+    let mut in_words = input.split(" ").collect::<Vec<&str>>();
+    let res_in = Command::new(in_words.remove(0))
+                            .args(in_words)
                             .output()
                             .expect("failed to execute process");
 
