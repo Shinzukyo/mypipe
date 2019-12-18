@@ -1,30 +1,27 @@
+#[macro_use]
+extern crate clap;
+use clap::{App,};
 use std::process::Command;
-extern crate clap; 
-use clap::{Arg, App};
 
 
 fn main() {
-    let yaml = load_yaml!("../configs/main.yml");
+    let yaml = load_yaml!("../conf/pipe.yml");
     let matches = App::from_yaml(yaml).get_matches(); 
 
-    let input = matches.value_of("in").unwrap().to_string();
-    let output = matches.value_of("out").unwrap().to_string();
+    let input = matches.value_of("in").unwrap();
+    let output = matches.value_of("out").unwrap();
 
-    let in_cmd = std::process::Command::new("cmd");
-    let out_cmd = std::process::Command::new("cmd");
+    let res_in = Command::new(input.to_string())
+                            .output()
+                            .expect("failed to execute process");
 
-    let res_in = in_cmd
-                .args(input)
-                .stdout(std::process::Stdio::piped())
-                .spawn()
-                .expect("error");
+    let res = res_in.stdout;
 
-    let out_res = out_cmd
-                .args(output)
-                .stdin(std::process::Stdio::from(stdin))
-                .output()
-                .expect("error");
+    let output_res = Command::new(output.to_string())
+                    .arg(String::from_utf8_lossy(&res).to_string())    
+                    .output()
+                    .expect("failed to execute process");
 
-    print!("{}", String::from_utf8(out_res.stdout).unwrap());
+    print!("{}", String::from_utf8(output_res.stdout).unwrap());
 }
 
